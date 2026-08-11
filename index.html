@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Minha Evolução - Treino</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--text:#151719;--muted:#697078;--line:#e4e8ec;--accent:#151719;--soft:#eef1f4;--good:#16794b;--bad:#a92b2b;--warn:#9b6500}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.wrap{max-width:1100px;margin:auto;padding:18px}.head{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+h1{font-size:22px;margin:0}.subtitle{color:var(--muted);font-size:13px;margin-top:3px}
+nav{display:flex;gap:8px;overflow:auto;padding:10px 0 0}
+button{border:0;border-radius:12px;padding:11px 14px;font-weight:700;cursor:pointer;background:var(--soft);color:var(--text)}
+button.active,.primary{background:var(--accent);color:#fff}.danger{background:#fbeaea;color:#9a2222}.ghost{background:transparent;border:1px solid var(--line)}
+main{padding:16px 0 80px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.card{grid-column:span 12;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.03)}
+@media(min-width:760px){.half{grid-column:span 6}}
+h2{font-size:18px;margin:0 0 14px}h3{font-size:15px;margin:12px 0 8px}
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:8px 0 5px}
+input,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:#fff;font:inherit;color:var(--text)}
+.row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:640px){.row3{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+.muted{color:var(--muted);font-size:13px}.big{font-size:28px;font-weight:800}.metric{padding:13px;background:var(--soft);border-radius:14px}
+.exercise{padding:12px 0;border-top:1px solid var(--line)}.exercise:first-child{border-top:0}.exercise-title{font-weight:800}
+.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--soft);font-size:11px;margin-left:5px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px 7px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--muted);font-size:11px;text-transform:uppercase}
+canvas{width:100%;height:230px;background:#fff;border-radius:12px}.hidden{display:none!important}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.success{color:var(--good);font-size:12px;font-weight:700}.error{color:var(--bad);font-size:12px;font-weight:700}.warning{color:var(--warn);font-size:12px;font-weight:700}
+.note{font-size:12px;color:var(--muted);line-height:1.5}.authbox{max-width:520px;margin:28px auto}.status{font-size:12px;color:var(--muted)}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}.badge{display:inline-block;padding:6px 9px;border-radius:999px;background:var(--soft);font-size:12px}
+
+.rank-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+@media(max-width:760px){.rank-grid{grid-template-columns:1fr}}
+.rank-card{border:1px solid var(--line);border-radius:18px;padding:16px;background:linear-gradient(180deg,#ffffff 0%,#f7f9fb 100%);box-shadow:0 2px 10px rgba(0,0,0,.03)}
+.rank-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.rank-medal{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800}
+.gold{background:linear-gradient(180deg,#ffe58a,#f2c94c)}
+.silver{background:linear-gradient(180deg,#f1f3f5,#cfd4da)}
+.bronze{background:linear-gradient(180deg,#f6c7a1,#d38a5c)}
+.rank-title{font-size:14px;font-weight:800}
+.rank-sub{font-size:12px;color:var(--muted)}
+.rank-exercise{font-size:16px;font-weight:800;margin:6px 0 2px}
+.rank-value{font-size:24px;font-weight:900}
+.rank-label{font-size:12px;color:var(--muted)}
+.rank-hero{margin-top:16px;border:1px solid var(--line);border-radius:18px;padding:18px;background:linear-gradient(135deg,#151719 0%,#2b3138 100%);color:#fff}
+.rank-hero-title{font-size:18px;font-weight:900;margin-bottom:6px}
+.rank-hero-text{font-size:13px;line-height:1.5;opacity:.92}
+.rank-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+@media(max-width:760px){.rank-mini{grid-template-columns:1fr}}
+.rank-mini-box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px}
+.rank-mini-value{font-size:20px;font-weight:900}
+.rank-empty{font-size:13px;color:var(--muted);padding:10px 0}
+
+
+.rank-level-card{border:1px solid var(--line);border-radius:18px;padding:16px;background:linear-gradient(180deg,#ffffff 0%,#f7f9fb 100%)}
+.rank-current{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:14px;border-radius:14px;background:var(--soft)}
+.rank-current-name{font-size:12px;color:var(--muted);font-weight:700}
+.rank-current-level{font-size:24px;font-weight:900;line-height:1.1}
+.rank-current-load{font-size:13px;color:var(--muted)}
+.rank-badge-big{min-width:74px;height:74px;border-radius:18px;background:#151719;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;text-align:center;padding:8px}
+.tier-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:760px){.tier-list{grid-template-columns:1fr}}
+.tier-item{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tier-item.active{border-color:#151719;background:#eef1f4}
+.tier-name{font-weight:800;font-size:13px;text-transform:capitalize}.tier-threshold{font-size:12px;color:var(--muted)}
+
+</style>
+</head>
+<body>
+<header>
+<div class="wrap">
+  <div class="head">
+    <div><h1>Minha Evolução</h1><div class="subtitle">Treino e peso corporal sincronizados na nuvem</div></div>
+    <div class="actions">
+      <span id="userBadge" class="badge hidden"></span>
+      <button id="logoutBtn" class="ghost hidden" onclick="signOut()">Sair</button>
+      <button id="exportBtn" class="hidden" onclick="exportData()">Exportar</button>
+    </div>
+  </div>
+  <nav id="mainNav" class="hidden">
+    <button class="tab active" data-tab="treino">Treino</button>
+    <button class="tab" data-tab="historico">Histórico</button>
+    <button class="tab" data-tab="peso">Peso</button>
+    <button class="tab" data-tab="evolucao">Evolução</button>
+  </nav>
+</div>
+</header>
+
+<div class="wrap"><main>
+
+<section id="setupScreen" class="view">
+  <div class="card authbox">
+    <h2>Configuração do banco</h2>
+    <p class="note">Este arquivo está pronto para usar Supabase, mas você ainda precisa preencher no código as duas constantes <b>SUPABASE_URL</b> e <b>SUPABASE_PUBLISHABLE_KEY</b>.</p>
+    <p class="note">Depois de criar o projeto, rode o arquivo <b>supabase_setup.sql</b> no SQL Editor do Supabase e substitua as duas linhas de configuração no início do JavaScript deste arquivo.</p>
+  </div>
+</section>
+
+<section id="authScreen" class="view hidden">
+  <div class="card authbox">
+    <h2>Entrar</h2>
+    <div class="row">
+      <div><label>E-mail</label><input id="email" type="email" autocomplete="email" placeholder="seuemail@exemplo.com"></div>
+      <div><label>Senha</label><input id="password" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres"></div>
+    </div>
+    <div class="actions" style="margin-top:14px">
+      <button class="primary" onclick="signIn()">Entrar</button>
+      <button onclick="signUp()">Criar conta</button>
+    </div>
+    <p id="authMsg" class="status"></p>
+    <p class="note">Dependendo da configuração padrão do seu projeto Supabase, pode ser necessário confirmar o e-mail antes do primeiro login.</p>
+  </div>
+</section>
+
+<div id="app" class="hidden">
+<section id="treino" class="view">
+  <div class="grid">
+    <div class="card">
+      <h2>Registrar treino</h2>
+      <div class="row">
+        <div><label>Dia do treino</label><select id="daySelect"></select></div>
+        <div><label>Data</label><input id="trainDate" type="date"></div>
+      </div>
+      <div id="exerciseList"></div>
+    </div>
+    <div class="card">
+      <h2>Migração</h2>
+      <p class="note">Se você usou a versão antiga deste app neste mesmo navegador, pode copiar os dados salvos localmente para a nuvem uma única vez.</p>
+      <button onclick="migrateLocalData()">Importar dados antigos deste navegador</button>
+      <span id="migrateMsg" class="status"></span>
+    </div>
+  </div>
+</section>
+
+<section id="historico" class="view hidden">
+  <div class="grid"><div class="card">
+    <h2>Histórico de treinos</h2>
+    <div class="row">
+      <div><label>Filtrar exercício</label><select id="historyExercise"></select></div>
+      <div><label>Período</label><select id="historyPeriod"><option value="all">Tudo</option><option value="30">30 dias</option><option value="90">90 dias</option><option value="180">180 dias</option></select></div>
+    </div>
+    <div id="historyTable" style="overflow:auto;margin-top:12px"></div>
+  </div></div>
+</section>
+
+<section id="peso" class="view hidden">
+  <div class="grid">
+    <div class="card half">
+      <h2>Registrar peso corporal</h2>
+      <div class="row">
+        <div><label>Data</label><input id="weightDate" type="date"></div>
+        <div><label>Peso (kg)</label><input id="weightValue" type="number" step="0.1" min="1" placeholder="Ex.: 75.0"></div>
+      </div>
+      <div class="actions" style="margin-top:12px"><button class="primary" onclick="saveWeight()">Salvar peso</button><span id="weightMsg" class="status"></span></div>
+      <p class="note">O peso varia naturalmente com hidratação, alimentação e horário. Use os registros para observar tendências ao longo do tempo.</p>
+    </div>
+    <div class="card half">
+      <h2>Resumo</h2>
+      <div class="row">
+        <div class="metric"><div class="muted">Último peso</div><div class="big" id="latestWeight">—</div></div>
+        <div class="metric"><div class="muted">Registros</div><div class="big" id="weightCount">0</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Evolução do peso</h2><canvas id="weightChart" width="900" height="260"></canvas>
+      <div id="weightTable" style="overflow:auto;margin-top:10px"></div>
+    </div>
+  </div>
+</section>
+
+<section id="evolucao" class="view hidden">
+  <div class="grid">
+    <div class="card half">
+      <h2>Progresso por exercício</h2>
+      <label>Exercício</label><select id="progressExercise"></select>
+      <div class="row" style="margin-top:12px">
+        <div class="metric"><div class="muted">Melhor carga</div><div class="big" id="bestLoad">—</div></div>
+        <div class="metric"><div class="muted">Melhor volume</div><div class="big" id="bestVolume">—</div></div>
+      </div>
+    </div>
+    <div class="card half">
+      <h2>Ranking do exercício</h2><p class="note">Baseado na sua evolução em relação à primeira carga registrada.</p>
+      <div id="exerciseRankCard" class="rank-level-card"></div>
+    </div>
+    <div class="card"><h2>Carga ao longo do tempo</h2><canvas id="loadChart" width="900" height="260"></canvas></div>
+    <div class="card">
+      <h2>Ranking de evolução</h2>
+      <p class="note">Veja seus maiores destaques de progresso de forma rápida e visual.</p>
+      <div id="rankingHero"></div>
+      <div id="rankingGrid"></div>
+    </div>
+  </div>
+</section>
+</div>
+
+</main></div>
+<footer id="footerText">Banco na nuvem via Supabase. Cada usuário acessa apenas os próprios registros.</footer>
+
+<script>
+/* =========================
+   1) COLE AQUI OS DADOS PÚBLICOS DO SEU PROJETO
+   Nunca coloque service_role/secret key neste arquivo.
+   ========================= */
+const SUPABASE_URL = "https://cfroneunmelkvfrvlleb.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_oLGrzXt1v8wzWGci9poa1A_kYcWv6oK";
+
+/* ========================= */
+const configured = SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("COLE_AQUI")
+  && SUPABASE_PUBLISHABLE_KEY.length > 20 && !SUPABASE_PUBLISHABLE_KEY.includes("COLE_AQUI");
+
+let db = null;
+if (configured) {
+  db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
+}
+
+const routine={
+"Segunda — Peito, ombros, tríceps e abdômen":[["Supino reto articulado","3","8–12"],["Supino inclinado articulado","3","8–12"],["Crucifixo / peck deck","3","10–15"],["Desenvolvimento na máquina","3","8–12"],["Elevação lateral","3","12–15"],["Tríceps corda","3","10–15"],["Tríceps francês na polia","3","10–15"],["Abdominal na máquina ou polia","3","10–15"]],
+"Terça — Costas, bíceps, posterior de ombro e trapézio":[["Puxada alta","3","8–12"],["Remada articulada com apoio no peito","3","8–12"],["Remada baixa na polia","3","10–12"],["Crucifixo inverso na máquina","3","12–15"],["Rosca Scott na máquina","3","10–12"],["Rosca Bayesian","3","10–15"],["Encolhimento para trapézio","2–3","10–15"]],
+"Quarta — Pernas A (quadríceps)":[["Hack squat","3","8–12"],["Leg press 45°","3","10–12"],["Cadeira extensora","3","10–15"],["Mesa flexora","3","10–12"],["Cadeira flexora","3","10–12"],["Panturrilha em pé / máquina","3","10–15"]],
+"Quinta — Upper (segundo estímulo)":[["Puxada neutra","3","8–12"],["Remada articulada","3","8–12"],["Supino inclinado articulado","3","8–12"],["Crucifixo na máquina","3","10–15"],["Elevação lateral","3","12–15"],["Crucifixo inverso","3","12–15"],["Rosca na polia","3","10–12"],["Tríceps na polia","3","10–12"]],
+"Sábado — Pernas B (posterior e glúteos)":[["Mesa flexora","3","8–12"],["Cadeira flexora","3","10–12"],["Extensão de quadril na máquina","3","10–12"],["Hack squat ou leg press","3","10–12"],["Cadeira extensora","3","10–15"],["Elevação pélvica na máquina","3","8–12"],["Panturrilha sentada","3","10–15"]]};
+
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const today=()=>new Date().toISOString().slice(0,10);
+let currentUser=null, sessions=[], weights=[];
+
+$("#trainDate").value=today(); $("#weightDate").value=today();
+
+function allExercises(){return[...new Set(Object.values(routine).flat().map(x=>x[0]))].sort((a,b)=>a.localeCompare(b))}
+function fillSelect(el,items,includeAll=false){el.innerHTML=(includeAll?'<option value="all">Todos</option>':'')+items.map(x=>`<option>${x}</option>`).join("")}
+fillSelect($("#daySelect"),Object.keys(routine)); fillSelect($("#historyExercise"),allExercises(),true); fillSelect($("#progressExercise"),allExercises());
+
+function renderExercises(){
+ const day=$("#daySelect").value,list=routine[day];
+ $("#exerciseList").innerHTML=list.map((e,i)=>`<div class="exercise">
+ <div class="exercise-title">${e[0]} <span class="pill">${e[1]} séries</span><span class="pill">${e[2]} reps</span></div>
+ <div class="row3">${[1,2,3].map(s=>`<div><label>Série ${s} — kg</label><input class="load" data-i="${i}" data-s="${s}" type="number" step="0.5" min="0" placeholder="Carga"><label>Reps</label><input class="reps" data-i="${i}" data-s="${s}" type="number" min="0" max="100" placeholder="Reps"></div>`).join("")}</div>
+ <label>Observação</label><input class="obs" data-i="${i}" placeholder="Opcional: técnica, RIR, ajuste da máquina..."></div>`).join("")
+ + `<div class="actions" style="margin-top:14px"><button class="primary" onclick="saveSession()">Salvar treino</button><span id="saveMsg" class="status"></span></div>`;
+}
+$("#daySelect").addEventListener("change",renderExercises); renderExercises();
+
+async function init(){
+ if(!configured){$("#setupScreen").classList.remove("hidden"); return;}
+ $("#setupScreen").classList.add("hidden");
+ const {data:{session}}=await db.auth.getSession();
+ await applySession(session);
+ db.auth.onAuthStateChange(async (_event, session)=>{await applySession(session)});
+}
+
+async function applySession(session){
+ currentUser=session?.user||null;
+ if(!currentUser){
+   $("#authScreen").classList.remove("hidden"); $("#app").classList.add("hidden"); $("#mainNav").classList.add("hidden");
+   $("#logoutBtn").classList.add("hidden"); $("#exportBtn").classList.add("hidden"); $("#userBadge").classList.add("hidden");
+   return;
+ }
+ $("#authScreen").classList.add("hidden"); $("#app").classList.remove("hidden"); $("#mainNav").classList.remove("hidden");
+ $("#logoutBtn").classList.remove("hidden"); $("#exportBtn").classList.remove("hidden"); $("#userBadge").classList.remove("hidden");
+ $("#userBadge").textContent=currentUser.email||"Conta";
+ await loadCloudData();
+}
+
+async function signUp(){
+ const email=$("#email").value.trim(),password=$("#password").value;
+ if(!email||password.length<6){setAuthMsg("Informe um e-mail e uma senha com pelo menos 6 caracteres.","error");return}
+ setAuthMsg("Criando conta...");
+ const {data,error}=await db.auth.signUp({email,password});
+ if(error){setAuthMsg(error.message,"error");return}
+ if(data.session) setAuthMsg("Conta criada e login realizado.","success");
+ else setAuthMsg("Conta criada. Verifique seu e-mail se a confirmação estiver ativada.","success");
+}
+async function signIn(){
+ const email=$("#email").value.trim(),password=$("#password").value;
+ if(!email||!password){setAuthMsg("Preencha e-mail e senha.","error");return}
+ setAuthMsg("Entrando...");
+ const {error}=await db.auth.signInWithPassword({email,password});
+ if(error){setAuthMsg(error.message,"error");return}
+ setAuthMsg("Login realizado.","success");
+}
+async function signOut(){await db.auth.signOut()}
+function setAuthMsg(t,cls="status"){const el=$("#authMsg");el.textContent=t;el.className=cls}
+
+async function loadCloudData(){
+ const [{data:s,error:se},{data:w,error:we}]=await Promise.all([
+   db.from("workout_sessions").select("id,workout_date,day,exercises,created_at").order("workout_date",{ascending:true}),
+   db.from("body_weights").select("id,weight_date,value,created_at").order("weight_date",{ascending:true})
+ ]);
+ if(se){alert("Erro ao carregar treinos: "+se.message);return}
+ if(we){alert("Erro ao carregar pesos: "+we.message);return}
+ sessions=(s||[]).map(x=>({id:x.id,date:x.workout_date,day:x.day,exercises:x.exercises||[]}));
+ weights=(w||[]).map(x=>({id:x.id,date:x.weight_date,value:Number(x.value)}));
+ updateAll();
+}
+
+async function saveSession(){
+ const day=$("#daySelect").value,date=$("#trainDate").value||today();
+ const exs=routine[day].map((e,i)=>{
+   const sets=[1,2,3].map(s=>{
+     const l=document.querySelector(`.load[data-i="${i}"][data-s="${s}"]`).value;
+     const r=document.querySelector(`.reps[data-i="${i}"][data-s="${s}"]`).value;
+     return{load:l===""?null:+l,reps:r===""?null:+r}
+   }).filter(x=>x.load!==null||x.reps!==null);
+   return{name:e[0],sets,obs:document.querySelector(`.obs[data-i="${i}"]`).value.trim()}
+ }).filter(x=>x.sets.length||x.obs);
+ if(!exs.length){alert("Preencha pelo menos uma série.");return}
+ const el=$("#saveMsg"); el.textContent="Salvando...";
+ const {error}=await db.from("workout_sessions").insert({user_id:currentUser.id,workout_date:date,day,exercises:exs});
+ if(error){el.textContent="Erro: "+error.message;el.className="error";return}
+ el.textContent="Treino salvo na nuvem ✓";el.className="success"; await loadCloudData();
+ setTimeout(()=>{el.textContent="";el.className="status"},1800)
+}
+
+async function saveWeight(){
+ const date=$("#weightDate").value||today(),value=parseFloat($("#weightValue").value);
+ if(!value||value<=0){alert("Informe um peso válido.");return}
+ const msg=$("#weightMsg");msg.textContent="Salvando...";
+ const {error}=await db.from("body_weights").insert({user_id:currentUser.id,weight_date:date,value});
+ if(error){msg.textContent="Erro: "+error.message;msg.className="error";return}
+ $("#weightValue").value="";msg.textContent="Peso salvo na nuvem ✓";msg.className="success";await loadCloudData();
+ setTimeout(()=>{msg.textContent="";msg.className="status"},1600)
+}
+
+async function delWeight(id){
+ if(!confirm("Excluir este registro de peso?"))return;
+ const {error}=await db.from("body_weights").delete().eq("id",id);
+ if(error){alert(error.message);return}
+ await loadCloudData();
+}
+
+function sessionRows(exName="all",days="all"){
+ let cutoff=null;if(days!=="all"){cutoff=new Date();cutoff.setDate(cutoff.getDate()-Number(days))}
+ let rows=[];
+ sessions.forEach(s=>{
+   if(cutoff&&new Date(s.date+"T00:00:00")<cutoff)return;
+   (s.exercises||[]).forEach(e=>{
+     if(exName!=="all"&&e.name!==exName)return;
+     const maxLoad=Math.max(...(e.sets||[]).map(x=>x.load??0),0),volume=(e.sets||[]).reduce((a,x)=>a+((x.load??0)*(x.reps??0)),0);
+     rows.push({date:s.date,day:s.day,name:e.name,sets:e.sets||[],maxLoad,volume,obs:e.obs||""})
+   })
+ });
+ return rows.sort((a,b)=>b.date.localeCompare(a.date))
+}
+
+function renderHistory(){
+ const rows=sessionRows($("#historyExercise").value,$("#historyPeriod").value);
+ $("#historyTable").innerHTML=rows.length?`<table><thead><tr><th>Data</th><th>Exercício</th><th>Séries</th><th>Máx.</th><th>Volume</th></tr></thead><tbody>${
+ rows.map(r=>`<tr><td>${fmtDate(r.date)}</td><td>${r.name}</td><td>${r.sets.map(s=>`${s.load??"—"}×${s.reps??"—"}`).join(" / ")}</td><td>${r.maxLoad||"—"} kg</td><td>${Math.round(r.volume)} kg·rep</td></tr>`).join("")
+ }</tbody></table>`:'<p class="muted">Nenhum registro encontrado.</p>';
+}
+$("#historyExercise").addEventListener("change",renderHistory);$("#historyPeriod").addEventListener("change",renderHistory);
+function fmtDate(d){const[y,m,day]=d.split("-");return`${day}/${m}/${y}`}
+
+function updateWeight(){
+ $("#latestWeight").textContent=weights.length?weights.at(-1).value.toFixed(1)+" kg":"—";
+ $("#weightCount").textContent=weights.length;
+ $("#weightTable").innerHTML=weights.length?`<table><thead><tr><th>Data</th><th>Peso</th><th></th></tr></thead><tbody>${
+ [...weights].reverse().map(w=>`<tr><td>${fmtDate(w.date)}</td><td>${w.value.toFixed(1)} kg</td><td><button class="danger" onclick="delWeight(${w.id})">Excluir</button></td></tr>`).join("")
+ }</tbody></table>`:"";
+ drawLineChart($("#weightChart"),weights.map(x=>({x:x.date,y:x.value})),"kg")
+}
+
+function progressRows(name){return sessionRows(name,"all").reverse().map(r=>({x:r.date,y:r.maxLoad,volume:r.volume})).filter(x=>x.y>0)}
+function updateProgress(){
+ const name=$("#progressExercise").value,rows=progressRows(name),max=rows.length?Math.max(...rows.map(x=>x.y)):0,vol=rows.length?Math.max(...rows.map(x=>x.volume)):0;
+ $("#bestLoad").textContent=max?max+" kg":"—";$("#bestVolume").textContent=vol?Math.round(vol):"—";drawLineChart($("#loadChart"),rows,"kg");updateExerciseRank()
+}
+$("#progressExercise").addEventListener("change",updateProgress);
+
+function getExerciseTier(progressPct){
+ const tiers=[
+   {name:'pena', min:0, label:'início'},
+   {name:'madeira', min:5, label:'+5%'},
+   {name:'aspirante', min:10, label:'+10%'},
+   {name:'soldado', min:20, label:'+20%'},
+   {name:'general', min:30, label:'+30%'},
+   {name:'viking', min:40, label:'+40%'},
+   {name:'golias', min:55, label:'+55%'},
+   {name:'bitelo', min:70, label:'+70% ou mais'}
+ ];
+ let current=tiers[0];
+ for(const tier of tiers){ if(progressPct>=tier.min) current=tier; }
+ return {current, tiers};
+}
+
+function getExerciseProgressData(name){
+ const rows=progressRows(name);
+ const valid=rows.filter(r=>r.y>0).sort((a,b)=>a.x.localeCompare(b.x));
+ if(!valid.length) return {baseLoad:0,bestLoad:0,progressPct:0,rows:[]};
+
+ const baseLoad=valid[0].y;
+ const bestLoad=Math.max(...valid.map(r=>r.y));
+ const progressPct=baseLoad>0 ? ((bestLoad-baseLoad)/baseLoad)*100 : 0;
+
+ return {baseLoad,bestLoad,progressPct,rows:valid};
+}
+
+function updateExerciseRank(){
+ const name=$("#progressExercise").value;
+ const {baseLoad,bestLoad,progressPct}=getExerciseProgressData(name);
+ const box=$("#exerciseRankCard");
+ const {current,tiers}=getExerciseTier(progressPct);
+ const nextTier=tiers.find(t=>t.min>progressPct);
+
+ box.innerHTML=`
+   <div class="rank-current">
+     <div>
+       <div class="rank-current-name">Ranking atual</div>
+       <div class="rank-current-level">${current.name}</div>
+       <div class="rank-current-load">
+         Carga inicial: <b>${baseLoad?baseLoad+' kg':'—'}</b><br>
+         Melhor carga: <b>${bestLoad?bestLoad+' kg':'—'}</b><br>
+         Evolução: <b>${baseLoad?progressPct.toFixed(1)+'%':'—'}</b>
+       </div>
+     </div>
+     <div class="rank-badge-big">${current.name.toUpperCase()}</div>
+   </div>
+   <div class="note" style="margin-bottom:10px">
+     ${!baseLoad
+       ? 'Registre uma carga neste exercício para iniciar seu ranking.'
+       : nextTier
+         ? `Próximo nível: <b>${nextTier.name}</b> ao alcançar <b>+${nextTier.min}%</b> sobre sua carga inicial.`
+         : 'Você alcançou o topo: <b>bitelo</b>.'}
+   </div>
+   <div class="tier-list">
+     ${tiers.map(t=>`<div class="tier-item ${t.name===current.name?'active':''}">
+       <div class="tier-name">${t.name}</div>
+       <div class="tier-threshold">${t.label}</div>
+     </div>`).join('')}
+   </div>`;
+}
+
+function updateRankings(){
+ const rows=sessionRows("all","all");
+ const grouped={};
+ rows.forEach(r=>{
+   if(!grouped[r.name]) grouped[r.name]={name:r.name,bestLoad:0,bestVolume:0,lastDate:r.date};
+   grouped[r.name].bestLoad=Math.max(grouped[r.name].bestLoad,r.maxLoad||0);
+   grouped[r.name].bestVolume=Math.max(grouped[r.name].bestVolume,Math.round(r.volume||0));
+   if(r.date > grouped[r.name].lastDate) grouped[r.name].lastDate=r.date;
+ });
+ const items=Object.values(grouped).filter(x=>x.bestLoad>0 || x.bestVolume>0);
+ const byLoad=[...items].sort((a,b)=>b.bestLoad-a.bestLoad).slice(0,3);
+ const byVolume=[...items].sort((a,b)=>b.bestVolume-a.bestVolume).slice(0,1)[0] || null;
+ const hero=document.getElementById('rankingHero');
+ const grid=document.getElementById('rankingGrid');
+ if(!items.length){
+   hero.innerHTML='<div class="rank-empty">Ainda não há dados suficientes para montar o ranking. Registre alguns treinos para ver seus destaques.</div>';
+   grid.innerHTML='';
+   return;
+ }
+ if(byLoad.length){
+   const first=byLoad[0];
+   hero.innerHTML=`<div class="rank-hero">
+     <div class="rank-hero-title">🏆 Seu destaque atual</div>
+     <div class="rank-hero-text">O exercício com maior carga registrada até agora é <b>${first.name}</b>. Continue acompanhando sua evolução para bater novos recordes.</div>
+     <div class="rank-mini">
+       <div class="rank-mini-box"><div class="rank-label" style="color:rgba(255,255,255,.72)">Melhor carga</div><div class="rank-mini-value">${first.bestLoad} kg</div></div>
+       <div class="rank-mini-box"><div class="rank-label" style="color:rgba(255,255,255,.72)">Exercício</div><div class="rank-mini-value" style="font-size:16px">${first.name}</div></div>
+       <div class="rank-mini-box"><div class="rank-label" style="color:rgba(255,255,255,.72)">Último registro</div><div class="rank-mini-value" style="font-size:16px">${fmtDate(first.lastDate)}</div></div>
+     </div>
+   </div>`;
+ } else {
+   hero.innerHTML='';
+ }
+ const medals=['gold','silver','bronze'];
+ const emojis=['🥇','🥈','🥉'];
+ grid.innerHTML=`<div class="rank-grid">${byLoad.map((item,idx)=>`
+   <div class="rank-card">
+     <div class="rank-top">
+       <div class="rank-medal ${medals[idx]}">${emojis[idx]}</div>
+       <div>
+         <div class="rank-title">${idx+1}º lugar em carga</div>
+         <div class="rank-sub">Maior carga registrada</div>
+       </div>
+     </div>
+     <div class="rank-exercise">${item.name}</div>
+     <div class="rank-value">${item.bestLoad} kg</div>
+     <div class="rank-label">Melhor volume: ${item.bestVolume} kg·rep</div>
+   </div>`).join('')}
+   ${byVolume ? `<div class="rank-card">
+     <div class="rank-top">
+       <div class="rank-medal gold">🔥</div>
+       <div>
+         <div class="rank-title">Maior volume</div>
+         <div class="rank-sub">Exercício mais forte em volume total</div>
+       </div>
+     </div>
+     <div class="rank-exercise">${byVolume.name}</div>
+     <div class="rank-value">${byVolume.bestVolume}</div>
+     <div class="rank-label">kg·rep acumulado na melhor sessão</div>
+   </div>` : ''}
+ </div>`;
+}
+
+function drawLineChart(canvas,data,suffix){
+ const ctx=canvas.getContext("2d"),W=canvas.width,H=canvas.height,p=45;ctx.clearRect(0,0,W,H);ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);
+ ctx.strokeStyle="#e4e8ec";ctx.lineWidth=1;for(let i=0;i<5;i++){let yy=p+(H-2*p)*i/4;ctx.beginPath();ctx.moveTo(p,yy);ctx.lineTo(W-p,yy);ctx.stroke()}
+ if(!data.length){ctx.fillStyle="#697078";ctx.font="16px system-ui";ctx.fillText("Sem dados ainda",p,H/2);return}
+ let ys=data.map(d=>d.y),min=Math.min(...ys),max=Math.max(...ys);if(min===max){min-=1;max+=1}
+ const xx=i=>data.length===1?W/2:p+(W-2*p)*i/(data.length-1),yy=v=>H-p-(v-min)/(max-min)*(H-2*p);
+ ctx.strokeStyle="#151719";ctx.lineWidth=4;ctx.beginPath();data.forEach((d,i)=>i?ctx.lineTo(xx(i),yy(d.y)):ctx.moveTo(xx(i),yy(d.y)));ctx.stroke();
+ ctx.fillStyle="#151719";data.forEach((d,i)=>{ctx.beginPath();ctx.arc(xx(i),yy(d.y),5,0,Math.PI*2);ctx.fill()});
+ ctx.fillStyle="#697078";ctx.font="12px system-ui";ctx.fillText(max.toFixed(1)+" "+suffix,5,p+4);ctx.fillText(min.toFixed(1)+" "+suffix,5,H-p+4);
+ ctx.fillText(fmtDate(data[0].x),p,H-12);if(data.length>1){const last=fmtDate(data.at(-1).x),tw=ctx.measureText(last).width;ctx.fillText(last,W-p-tw,H-12)}
+}
+
+async function migrateLocalData(){
+ const msg=$("#migrateMsg");msg.textContent=" Verificando...";
+ let oldSessions=[],oldWeights=[];
+ try{oldSessions=JSON.parse(localStorage.getItem("gym_sessions_v1")||"[]");oldWeights=JSON.parse(localStorage.getItem("gym_weights_v1")||"[]")}catch{}
+ if(!oldSessions.length&&!oldWeights.length){msg.textContent=" Nenhum dado antigo encontrado.";return}
+ if(!confirm(`Importar ${oldSessions.length} treino(s) e ${oldWeights.length} peso(s) para sua conta?`)){msg.textContent="";return}
+ msg.textContent=" Importando...";
+ if(oldSessions.length){
+   const rows=oldSessions.map(s=>({user_id:currentUser.id,workout_date:s.date,day:s.day,exercises:s.exercises||[]}));
+   const {error}=await db.from("workout_sessions").insert(rows);if(error){msg.textContent=" Erro nos treinos: "+error.message;return}
+ }
+ if(oldWeights.length){
+   const rows=oldWeights.map(w=>({user_id:currentUser.id,weight_date:w.date,value:w.value}));
+   const {error}=await db.from("body_weights").insert(rows);if(error){msg.textContent=" Erro nos pesos: "+error.message;return}
+ }
+ msg.textContent=" Importação concluída ✓";await loadCloudData();
+}
+
+function exportData(){
+ const blob=new Blob([JSON.stringify({sessions,weights,exportedAt:new Date().toISOString()},null,2)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="backup_evolucao_treino.json";a.click();URL.revokeObjectURL(a.href)
+}
+function updateAll(){renderHistory();updateWeight();updateProgress();updateRankings();updateExerciseRank()}
+
+$$(".tab").forEach(b=>b.addEventListener("click",()=>{
+ $$(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+ ["treino","historico","peso","evolucao"].forEach(id=>$("#"+id).classList.add("hidden"));
+ $("#"+b.dataset.tab).classList.remove("hidden");
+ if(b.dataset.tab==="peso")updateWeight();if(b.dataset.tab==="evolucao"){updateProgress();updateRankings();updateExerciseRank()}if(b.dataset.tab==="historico")renderHistory()
+}));
+
+init();
+</script>
+</body></html>
